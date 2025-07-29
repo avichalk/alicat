@@ -28,7 +28,7 @@ class FlowController(RealFlowController):
         self.hw = Client(self)
         self.hw.address = address
         self.open = True
-        self.control_point: str = choice(list(self.control_points))
+        self.control_point: str = choice(list(self.control_points))  # type:ignore[assignment]
         self.state: dict[str, str | float] = {
             'setpoint': 10,
             'gas': 'N2',
@@ -54,15 +54,6 @@ class FlowController(RealFlowController):
     async def _set_setpoint(self, setpoint: float) -> None:
         """Set the target setpoint."""
         self.state['setpoint'] = setpoint
-
-    async def _set_control_point(self, point: str) -> None:
-        """Set the control point."""
-        assert point in self.control_points
-        self.control_point = point
-
-    async def _get_control_point(self) -> str:
-        """Return the control point."""
-        return self.control_point
 
     async def set_flow_rate(self, flowrate: float) -> None:
         """Set the flowrate setpoint."""
@@ -95,12 +86,13 @@ class Client(RealClient):
         self.parent = parent
         super().__init__(timeout=0.01)
         self.writer = MagicMock(spec=asyncio.StreamWriter)
-        self.writer.write.side_effect=self.handle_write
+        self.writer.write.side_effect=self._handle_write
         self.reader = AsyncMock(spec=asyncio.StreamReader)
-        self.reader.read.return_value = b"OK\r"
-        self.reader.readuntil.return_value = b"OK\r"
+        self.reader.read.return_value = self.eol
+        self.reader.readuntil.side_effect = self._handle_read
+
         self.open = True
-        self.buffer = b''
+        self._next_reply = ''
 
     async def _handle_connection(self) -> None:
         pass
@@ -115,3 +107,17 @@ class Client(RealClient):
             self.parent.button_lock = True
         elif msg == '$$U':  # unlock
             self.parent.button_lock = False
+        elif 'W122=' in msg:  # set control point
+            cp = int(msg[5:])
+            self.parent.control_point = next(p for p, i in self.parent.control_points.items() if cp == i)
+            self._next_reply = str(cp)
+        elif msg == 'R122':  # read control point
+            self._next_reply = str(self.parent.control_points[self.parent.control_point])
+        else:
+            raise NotImplementedError(msg)
+
+    async def _handle_read(self, separator: bytes) -> bytes:
+        """Reply to read requests from the mock client."""
+        reply = self._next_reply.encode() + separator
+        self._next_reply = ''
+        return reply
