@@ -1,12 +1,14 @@
 """Mock for offline testing of `FlowController`s."""
 from __future__ import annotations
 
+import asyncio
 from random import choice, random
 from time import sleep
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 from .driver import FlowController as RealFlowController
+from .util import Client as RealClient
 
 
 class AsyncClientMock(MagicMock):
@@ -22,7 +24,8 @@ class FlowController(RealFlowController):
 
     def __init__(self, address: str, unit: str = 'A', *args: Any, **kwargs: Any) -> None:
         """Initialize the device client."""
-        self.hw = AsyncClientMock()
+        super().__init__()
+        self.hw = Client(self)
         self.hw.address = address
         self.open = True
         self.control_point: str = choice(list(self.control_points))
@@ -77,14 +80,6 @@ class FlowController(RealFlowController):
         await self._set_control_point('abs pressure')
         await self._set_setpoint(pressure)
 
-    async def lock(self) -> None:
-        """Lock the buttons."""
-        self.button_lock = True
-
-    async def unlock(self) -> None:
-        """Unlock the buttons."""
-        self.button_lock = False
-
     async def get_ramp_config(self) -> dict[str, bool]:
         """Get ramp config."""
         return self.ramp_config
@@ -92,3 +87,31 @@ class FlowController(RealFlowController):
     async def set_ramp_config(self, config: dict[str, bool]) -> None:
         """Set ramp config."""
         self.ramp_config = config
+
+class Client(RealClient):
+    """Mock the alicat communication client."""
+
+    def __init__(self, parent: FlowController) -> None:
+        self.parent = parent
+        super().__init__(timeout=0.01)
+        self.writer = MagicMock(spec=asyncio.StreamWriter)
+        self.writer.write.side_effect=self.handle_write
+        self.reader = AsyncMock(spec=asyncio.StreamReader)
+        self.reader.read.return_value = b"OK\r"
+        self.reader.readuntil.return_value = b"OK\r"
+        self.open = True
+        self.buffer = b''
+
+    async def _handle_connection(self) -> None:
+        pass
+
+    def _handle_write(self, data: bytes) -> None:
+        """Act on writes sent to the mock client, updating internal state and setting self._next_reply if necessary."""
+        msg = data.decode()
+        if msg[0] != self.parent.unit:  # command for another unit
+            return
+        msg = msg[1:-1]  # strip unit and newline at end
+        if msg == '$$L':  # lock
+            self.parent.button_lock = True
+        elif msg == '$$U':  # unlock
+            self.parent.button_lock = False
