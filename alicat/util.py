@@ -34,10 +34,6 @@ class Client(ABC):
         self.eol = b'\r'
         self.lock = asyncio.Lock()
 
-    @abstractmethod
-    async def _read(self, length: int) -> str:
-        """Read a fixed number of bytes from the device."""
-
     async def _readline(self) -> str:
         """Read until a line terminator."""
         response = await self.reader.readuntil(self.eol)
@@ -69,7 +65,7 @@ class Client(ABC):
         """Clear the reader stream when it has been corrupted from multiple connections."""
         logger.warning("Multiple connections detected; clearing reader stream.")
         try:
-            junk = await asyncio.wait_for(self._read(100), timeout=self.timeout)
+            junk = await asyncio.wait_for(self.reader.read(100), timeout=self.timeout)
             logger.warning(junk)
         except TimeoutError:
             pass
@@ -135,12 +131,6 @@ class TcpClient(Client):
         self.reader, self.writer = await asyncio.open_connection(self.address, self.port)
         self.open = True
 
-    async def _read(self, length: int) -> str:
-        """Read a fixed number of bytes from the device."""
-        await self._handle_connection()
-        response = await self.reader.read(length)
-        return response.decode().strip()
-
     async def _handle_connection(self) -> None:
         """Automatically maintain TCP connection."""
         if self.open:
@@ -166,7 +156,6 @@ class SerialClient(Client):
         self.timeout = timeout
         self.connectTask = asyncio.create_task(self._connect())
 
-
     async def _connect(self) -> None:
         self.reader, self.writer = await serial_asyncio_fast.open_serial_connection(
             url = self.address,
@@ -177,11 +166,6 @@ class SerialClient(Client):
             timeout = self.timeout
         )
         self.open = True
-
-    async def _read(self, length: int) -> str:
-        """Read a fixed number of bytes from the device."""
-        response = await self.reader.read(length)
-        return response.decode()
 
     async def _handle_connection(self) -> None:
         async with self.lock:
