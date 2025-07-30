@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from random import choice, random
 from time import sleep
 from typing import Any
@@ -43,12 +44,6 @@ class FlowController(RealFlowController):
         sleep(random() * 0.25)
         return self.state
 
-    async def set_gas(self, gas: int | str) -> None:
-        """Set the gas type."""
-        if isinstance(gas, int):
-            gas = self.gases[gas]
-        self.state['gas'] = gas
-
     async def get_ramp_config(self) -> dict[str, bool]:
         """Get ramp config."""
         return self.ramp_config
@@ -75,6 +70,20 @@ class Client(RealClient):
     async def _handle_connection(self) -> None:
         pass
 
+    def _create_dataframe(self) -> str:
+        """Generate a typical 'dataframe' with current operating conditions."""
+        state = self.parent.state
+        return (
+            f"{self.parent.unit} "
+            f"{state['pressure']:+07.2f} "
+            f"{state['temperature']:+07.2f} "
+            f"{state['volumetric_flow']:+07.2f} "
+            f"{state['mass_flow']:+07.2f} "
+            f"{state['setpoint']:07.2f} "
+            f"{state['gas']:<7} "
+            f"{'LCK' if self.parent.button_lock else ''}"
+        )
+
     def _handle_write(self, data: bytes) -> None:
         """Act on writes sent to the mock client, updating internal state and setting self._next_reply if necessary."""
         msg = data.decode()
@@ -83,10 +92,10 @@ class Client(RealClient):
         msg = msg[1:-1]  # strip unit and newline at end
         if msg == '$$L':  # lock
             self.parent.button_lock = True
-            self._next_reply = 'FIXME - should be dataframe'
+            self._next_reply = self._create_dataframe()
         elif msg == '$$U':  # unlock
             self.parent.button_lock = False
-            self._next_reply = 'FIXME - should be dataframe'
+            self._next_reply = self._create_dataframe()
         elif 'W122=' in msg:  # set control point
             cp = int(msg[5:])
             self.parent.control_point = next(p for p, i in self.parent.control_points.items() if cp == i)
@@ -95,7 +104,17 @@ class Client(RealClient):
             self._next_reply = "122=" + str(self.parent.control_points[self.parent.control_point])
         elif msg[0] == 'S':  # set setpoint
             self.parent.state['setpoint'] = float(msg[1:])
-            self._next_reply = 'FIXME - should be dataframe'
+            self._next_reply = self._create_dataframe()
+        elif msg[0:6] == '$$W46=':  # set gas via reg46
+            gas = msg[6:]
+            self._next_reply = f"{self.parent.unit}   046 = {gas}"
+            with contextlib.suppress(ValueError):
+                gas = self.parent.gases[int(gas)]
+            self.parent.state['gas'] = gas
+        elif msg == '$$R46':  # read gas via reg46
+            gas_index = self.parent.gases.index(self.parent.state['gas'])
+            reg46_value = gas_index & 0x1FF  # encode gas number in low 9 bits
+            self._next_reply = f"{self.parent.unit}   046 = {reg46_value}"
         else:
             raise NotImplementedError(msg)
 

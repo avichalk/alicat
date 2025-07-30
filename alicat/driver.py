@@ -175,6 +175,7 @@ class FlowMeter:
         else:
             gas_number = gas
         command = f'{self.unit}$$W46={gas_number}'
+        # fixme does this overwrite the upper bits??
         await self._write_and_read(command)
         reg46 = await self._write_and_read(f'{self.unit}$$R46')
         if not reg46:
