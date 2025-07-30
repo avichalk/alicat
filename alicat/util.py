@@ -168,6 +168,8 @@ class SerialClient(Client):
         self.open = True
 
     async def _handle_connection(self) -> None:
+        if self.open:
+            return
         async with self.lock:
             await self.connectTask
         self.open = True
