@@ -43,10 +43,6 @@ class FlowController(RealFlowController):
         sleep(random() * 0.25)
         return self.state
 
-    async def _set_setpoint(self, setpoint: float) -> None:
-        """Set the target setpoint."""
-        self.state['setpoint'] = setpoint
-
     async def set_gas(self, gas: int | str) -> None:
         """Set the gas type."""
         if isinstance(gas, int):
@@ -97,6 +93,9 @@ class Client(RealClient):
             self._next_reply = "122=" + str(cp)
         elif msg == 'R122':  # read control point
             self._next_reply = "122=" + str(self.parent.control_points[self.parent.control_point])
+        elif msg[0] == 'S':  # set setpoint
+            self.parent.state['setpoint'] = float(msg[1:])
+            self._next_reply = 'FIXME - should be dataframe'
         else:
             raise NotImplementedError(msg)
 
