@@ -47,21 +47,11 @@ class FlowController(RealFlowController):
         """Set the target setpoint."""
         self.state['setpoint'] = setpoint
 
-    async def set_flow_rate(self, flowrate: float) -> None:
-        """Set the flowrate setpoint."""
-        await self._set_control_point('mass flow')
-        await self._set_setpoint(flowrate)
-
     async def set_gas(self, gas: int | str) -> None:
         """Set the gas type."""
         if isinstance(gas, int):
             gas = self.gases[gas]
         self.state['gas'] = gas
-
-    async def set_pressure(self, pressure: float) -> None:
-        """Set the pressure setpoint."""
-        await self._set_control_point('abs pressure')
-        await self._set_setpoint(pressure)
 
     async def get_ramp_config(self) -> dict[str, bool]:
         """Get ramp config."""
