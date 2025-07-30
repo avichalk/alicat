@@ -77,7 +77,8 @@ class Client(ABC):
         """Manage communication, including timeouts and logging."""
         try:
             await self._write(command)
-            result = await self._readline()
+            future = self._readline()
+            result = await asyncio.wait_for(future, timeout=self.timeout)
             self.timeouts = 0
             return result
         except (asyncio.TimeoutError, TypeError, OSError):
@@ -157,23 +158,6 @@ class TcpClient(Client):
                 if not self.reconnecting:
                     logger.error(f'Connecting to {self.address} timed out.')
                 self.reconnecting = True
-
-    async def _handle_communication(self, command: str) -> str | None:
-        """Manage communication, including timeouts and logging."""
-        try:
-            await self._write(command)
-            future = self._readline()
-            result = await asyncio.wait_for(future, timeout=self.timeout)
-            self.timeouts = 0
-            return result
-        except (asyncio.TimeoutError, TypeError, OSError):
-            self.timeouts += 1
-            if self.timeouts == self.max_timeouts:
-                logger.error(f'Reading from {self.address} timed out '
-                             f'{self.timeouts} times.')
-                await self.close()
-            return None
-
 
 class SerialClient(Client):
     """Client using a directly-connected RS232 serial device."""
