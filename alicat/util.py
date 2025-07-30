@@ -43,7 +43,7 @@ class Client(ABC):
         """Write a command and do not expect a response."""
         self.writer.write(message.encode() + self.eol)
 
-    async def _write_and_read(self, command: str) -> str | None:
+    async def write_and_read(self, command: str) -> str | None:
         """Write a command and read a response.
 
         As industrial devices are commonly unplugged, this has been expanded to
@@ -61,7 +61,7 @@ class Client(ABC):
             else:
                 return None
 
-    async def _clear(self) -> None:
+    async def clear(self) -> None:
         """Clear the reader stream when it has been corrupted from multiple connections."""
         logger.warning("Multiple connections detected; clearing reader stream.")
         try:

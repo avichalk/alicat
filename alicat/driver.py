@@ -108,7 +108,7 @@ class FlowMeter:
     async def _write_and_read(self, command: str) -> str | None:
         """Wrap the communicator request, to call _test_controller_open() before any request."""
         self._test_controller_open()
-        return await self.hw._write_and_read(command)
+        return await self.hw.write_and_read(command)
 
     async def get(self) -> dict:
         """Get the current state of the flow controller.
@@ -282,7 +282,7 @@ class FlowMeter:
     async def flush(self) -> None:
         """Read all available information. Use to clear queue."""
         self._test_controller_open()
-        await self.hw._clear()
+        await self.hw.clear()
 
     async def close(self) -> None:
         """Close the flow meter. Call this on program termination.
@@ -347,7 +347,7 @@ class FlowController(FlowMeter):
         if 'R122' not in command:
             await self._init_task
         self._test_controller_open()
-        return await self.hw._write_and_read(command)
+        return await self.hw.write_and_read(command)
 
     async def get(self) -> dict:
         """Get the current state of the flow controller.
