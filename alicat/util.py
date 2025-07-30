@@ -142,7 +142,6 @@ class TcpClient(Client):
 
     async def _readline(self) -> str:
         """Read until a line terminator."""
-        await self._handle_connection()
         response = await self.reader.readuntil(self.eol)
         return response.decode().strip().replace('\x00', '')
 
