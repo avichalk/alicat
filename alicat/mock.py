@@ -4,7 +4,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from random import choice, random
-from time import sleep
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
@@ -39,19 +38,6 @@ class FlowController(RealFlowController):
                      'setpoint', 'gas']
         self.firmware = '6v21.0-R22 Nov 30 2016,16:04:20'
 
-    async def get(self) -> dict[str, str | float]:
-        """Return the full state."""
-        sleep(random() * 0.25)
-        return self.state
-
-    async def get_ramp_config(self) -> dict[str, bool]:
-        """Get ramp config."""
-        return self.ramp_config
-
-    async def set_ramp_config(self, config: dict[str, bool]) -> None:
-        """Set ramp config."""
-        self.ramp_config = config
-
 class Client(RealClient):
     """Mock the alicat communication client."""
 
@@ -83,14 +69,25 @@ class Client(RealClient):
             f"{state['gas']:<7} "
             f"{'LCK' if self.parent.button_lock else ''}"
         )
+    def _create_ramp_response(self) -> str:
+        """Generate a response to setting or getting the ramp config."""
+        config = self.parent.ramp_config
+        return (f"{self.parent.unit}"
+                f" {1 if config['up'] else 0}"
+                f" {1 if config['down'] else 0}"
+                f" {1 if config['zero'] else 0}"
+                f" {1 if config['power'] else 0}")
 
     def _handle_write(self, data: bytes) -> None:
         """Act on writes sent to the mock client, updating internal state and setting self._next_reply if necessary."""
-        msg = data.decode()
+        msg = data.decode().strip()
         if msg[0] != self.parent.unit:  # command for another unit
             return
-        msg = msg[1:-1]  # strip unit and newline at end
-        if msg == '$$L':  # lock
+
+        msg = msg[1:]  # strip unit
+        if msg == '':  # get dataframe
+            self._next_reply = self._create_dataframe()
+        elif msg == '$$L':  # lock
             self.parent.button_lock = True
             self._next_reply = self._create_dataframe()
         elif msg == '$$U':  # unlock
@@ -99,9 +96,9 @@ class Client(RealClient):
         elif 'W122=' in msg:  # set control point
             cp = int(msg[5:])
             self.parent.control_point = next(p for p, i in self.parent.control_points.items() if cp == i)
-            self._next_reply = "122=" + str(cp)
+            self._next_reply = f"{self.parent.unit}   122 = {cp}"
         elif msg == 'R122':  # read control point
-            self._next_reply = "122=" + str(self.parent.control_points[self.parent.control_point])
+            self._next_reply = f"{self.parent.unit}   122 = {self.parent.control_points[self.parent.control_point]}"
         elif msg[0] == 'S':  # set setpoint
             self.parent.state['setpoint'] = float(msg[1:])
             self._next_reply = self._create_dataframe()
@@ -115,6 +112,18 @@ class Client(RealClient):
             gas_index = self.parent.gases.index(self.parent.state['gas'])
             reg46_value = gas_index & 0x1FF  # encode gas number in low 9 bits
             self._next_reply = f"{self.parent.unit}   046 = {reg46_value}"
+        elif msg == 'LSRC':  # get ramp config
+            self._next_reply = self._create_ramp_response()
+        elif 'LSRC' in msg:  # set ramp config
+            values = msg[5:].split(' ')
+            self.parent.ramp_config = {
+                'up': values[0] == '1',
+                'down': values[1] == '1',
+                'zero': values[2] == '1',
+                'power': values[3] == '1',
+            }
+            self._next_reply = self._create_ramp_response()
+
         else:
             raise NotImplementedError(msg)
 
