@@ -38,9 +38,10 @@ class Client(ABC):
     async def _read(self, length: int) -> str:
         """Read a fixed number of bytes from the device."""
 
-    @abstractmethod
     async def _readline(self) -> str:
-        """Read until a LF terminator."""
+        """Read until a line terminator."""
+        response = await self.reader.readuntil(self.eol)
+        return response.decode().strip().replace('\x00', '')
 
     async def _write(self, message: str) -> None:
         """Write a command and do not expect a response."""
@@ -140,11 +141,6 @@ class TcpClient(Client):
         response = await self.reader.read(length)
         return response.decode().strip()
 
-    async def _readline(self) -> str:
-        """Read until a line terminator."""
-        response = await self.reader.readuntil(self.eol)
-        return response.decode().strip().replace('\x00', '')
-
     async def _handle_connection(self) -> None:
         """Automatically maintain TCP connection."""
         if self.open:
@@ -186,11 +182,6 @@ class SerialClient(Client):
         """Read a fixed number of bytes from the device."""
         response = await self.reader.read(length)
         return response.decode()
-
-    async def _readline(self) -> str:
-        """Read until a LF terminator."""
-        response = await self.reader.readuntil(self.eol)
-        return response.strip().decode().replace('\x00', '')
 
     async def _handle_connection(self) -> None:
         async with self.lock:
