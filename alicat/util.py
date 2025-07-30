@@ -184,12 +184,12 @@ class SerialClient(Client):
 
     async def _read(self, length: int) -> str:
         """Read a fixed number of bytes from the device."""
-        response = await asyncio.wait_for(self.reader.read(length), self.timeout)
+        response = await self.reader.read(length)
         return response.decode()
 
     async def _readline(self) -> str:
         """Read until a LF terminator."""
-        response = await asyncio.wait_for(self.reader.readuntil(self.eol), self.timeout)
+        response = await self.reader.readuntil(self.eol)
         return response.strip().decode().replace('\x00', '')
 
     async def _handle_connection(self) -> None:
