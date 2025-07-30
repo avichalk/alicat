@@ -11,7 +11,11 @@ from typing import Any, ClassVar
 
 from .util import Client, SerialClient, TcpClient, _is_float
 
-
+GASES = ['Air', 'Ar', 'CH4', 'CO', 'CO2', 'C2H6', 'H2', 'He',
+         'N2', 'N2O', 'Ne', 'O2', 'C3H8', 'n-C4H10', 'C2H2',
+         'C2H4', 'i-C2H10', 'Kr', 'Xe', 'SF6', 'C-25', 'C-10',
+         'C-8', 'C-2', 'C-75', 'A-75', 'A-25', 'A1025', 'Star29',
+         'P-5']
 class FlowMeter:
     """Python driver for Alicat Flow Meters.
 
@@ -24,11 +28,7 @@ class FlowMeter:
 
     # mapping of port names to a tuple of Client objects and their refcounts
     open_ports: ClassVar[dict[str, tuple[Client, int]]] = {}
-    gases: ClassVar[list] = ['Air', 'Ar', 'CH4', 'CO', 'CO2', 'C2H6', 'H2', 'He',
-                             'N2', 'N2O', 'Ne', 'O2', 'C3H8', 'n-C4H10', 'C2H2',
-                             'C2H4', 'i-C2H10', 'Kr', 'Xe', 'SF6', 'C-25', 'C-10',
-                             'C-8', 'C-2', 'C-75', 'A-75', 'A-25', 'A1025', 'Star29',
-                             'P-5']
+
 
     def __init__(self, address: str = '/dev/ttyUSB0', unit: str = 'A', **kwargs: Any) -> None:
         """Connect this driver with the appropriate USB / serial port.
@@ -169,9 +169,9 @@ class FlowMeter:
                 Gas mixes may only be called by their mix number.
         """
         if isinstance(gas, str):
-            if gas not in self.gases:
+            if gas not in GASES:
                 raise ValueError(f"{gas} not supported!")
-            gas_number = self.gases.index(gas)
+            gas_number = GASES.index(gas)
         else:
             gas_number = gas
         command = f'{self.unit}$$W46={gas_number}'
@@ -209,10 +209,10 @@ class FlowMeter:
         if total_percent != 100:
             raise ValueError("Percentages of gas mix must add to 100%!")
 
-        if any(gas not in self.gases for gas in gases):
+        if any(gas not in GASES for gas in gases):
             raise ValueError("Gas not supported!")
 
-        gas_list = [f'{percent} {self.gases.index(gas)}' for gas, percent in gases.items()]
+        gas_list = [f'{percent} {GASES.index(gas)}' for gas, percent in gases.items()]
         command = ' '.join([
             self.unit,
             'GM',
@@ -303,6 +303,10 @@ class FlowMeter:
                 del FlowMeter.open_ports[port]
         self.open = False
 
+CONTROL_POINTS = {
+        'mass flow': 37, 'vol flow': 36,
+        'abs pressure': 34, 'gauge pressure': 38, 'diff pressure': 39
+    }  # fixme: add remaining control points
 
 class FlowController(FlowMeter):
     """Python driver for Alicat Flow Controllers.
@@ -316,11 +320,6 @@ class FlowController(FlowMeter):
     To set up your Alicat flow controller, power on the device and make sure
     that the "Input" option is set to "Serial".
     """
-
-    control_points: ClassVar[dict] = {
-        'mass flow': 37, 'vol flow': 36,
-        'abs pressure': 34, 'gauge pressure': 38, 'diff pressure': 39
-    }  # fixme: add remaining control points
 
     def __init__(self, address: str='/dev/ttyUSB0', unit: str='A', **kwargs: Any) -> None:
         """Connect this driver with the appropriate USB / serial port.
@@ -545,7 +544,7 @@ class FlowController(FlowMeter):
             raise OSError("Could not read control point.")
         value = int(line.split('=')[-1])
         try:
-            cp = next(p for p, r in self.control_points.items() if value == r)
+            cp = next(p for p, r in CONTROL_POINTS.items() if value == r)
             self.control_point = cp
             return cp
         except StopIteration:
@@ -557,9 +556,9 @@ class FlowController(FlowMeter):
         Args:
             point: 'mass flow', 'vol flow', 'abs pressure', 'gauge pressure', or 'diff pressure'
         """
-        if point not in self.control_points:
-            raise ValueError(f"Control point must be one of {list(self.control_points.keys())}.")
-        reg = self.control_points[point]
+        if point not in CONTROL_POINTS:
+            raise ValueError(f"Control point must be one of {list(CONTROL_POINTS.keys())}.")
+        reg = CONTROL_POINTS[point]
         command = f'{self.unit}W122={reg:d}'
         line = await self._write_and_read(command)
         if not line:
