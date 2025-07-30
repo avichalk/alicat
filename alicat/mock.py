@@ -87,14 +87,16 @@ class Client(RealClient):
         msg = msg[1:-1]  # strip unit and newline at end
         if msg == '$$L':  # lock
             self.parent.button_lock = True
+            self._next_reply = 'FIXME - should be dataframe'
         elif msg == '$$U':  # unlock
             self.parent.button_lock = False
+            self._next_reply = 'FIXME - should be dataframe'
         elif 'W122=' in msg:  # set control point
             cp = int(msg[5:])
             self.parent.control_point = next(p for p, i in self.parent.control_points.items() if cp == i)
-            self._next_reply = str(cp)
+            self._next_reply = "122=" + str(cp)
         elif msg == 'R122':  # read control point
-            self._next_reply = str(self.parent.control_points[self.parent.control_point])
+            self._next_reply = "122=" + str(self.parent.control_points[self.parent.control_point])
         else:
             raise NotImplementedError(msg)
 
