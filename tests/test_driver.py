@@ -5,15 +5,14 @@ from unittest import mock
 import pytest
 
 from alicat import command_line
+from alicat.driver import FlowController
+from alicat.mock import Client
 
-# from alicat.driver import FlowController
-from alicat.mock import FlowController
+ADDRESS = '/dev/ttyUSB0'
 
-ADDRESS = '/dev/tty.usbserial-FTCJ5EK9'
-
+@mock.patch('alicat.driver.SerialClient', Client)
 
 @pytest.mark.parametrize('unit', ['A', 'B'])
-@mock.patch('alicat.FlowController', FlowController)
 def test_driver_cli(capsys, unit):
     """Confirm the commandline interface works with different unit IDs."""
     command_line([ADDRESS, '--unit', unit])
