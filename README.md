@@ -47,7 +47,7 @@ import asyncio
 from alicat import FlowController
 
 async def get():
-    async with FlowController('ip-address:port') as flow_controller:
+    async with FlowController(address = "COM{port}", unit = "{unit_ID}") as flow_controller:
         print(await flow_controller.get())
 
 asyncio.run(get())
