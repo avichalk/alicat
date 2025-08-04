@@ -11,6 +11,7 @@ from alicat.mock import Client
 ADDRESS = '/dev/ttyUSB0'
 
 @mock.patch('alicat.driver.SerialClient', Client)
+@mock.patch('alicat.driver.TcpClient', Client)
 
 @pytest.mark.parametrize('unit', ['A', 'B'])
 def test_driver_cli(capsys, unit):
@@ -18,6 +19,14 @@ def test_driver_cli(capsys, unit):
     command_line([ADDRESS, '--unit', unit])
     captured = capsys.readouterr()
     assert ("mass_flow" in captured.out)
+
+
+@pytest.mark.parametrize('cls', [FlowController])  # Fixme: fix FlowMeter
+async def test_is_connected(cls):
+    """Confirm that connection status works."""
+    async with cls(ADDRESS) as device:
+        assert await device.is_connected(ADDRESS)
+        assert not await device.is_connected('bad_address')
 
 
 async def test_flow_setpoint_roundtrip():
