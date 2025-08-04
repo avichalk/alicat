@@ -111,6 +111,12 @@ class Client(RealClient):
             self._next_reply = self._create_ramp_response()
         elif msg == 'VE':  # get firmware
             self._next_reply = self.firmware
+        elif msg == '$$PC':
+            self.state['pressure'] = 0
+            self._next_reply = self._create_dataframe()
+        elif msg == '$$V':
+            self.state['volumetric_flow'] = 0
+            self._next_reply = self._create_dataframe()
         else:
             raise NotImplementedError(msg)
 

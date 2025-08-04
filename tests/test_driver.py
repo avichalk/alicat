@@ -55,6 +55,8 @@ async def test_set_standard_gas_name(gas):
         await device.set_gas(gas)
         result = await device.get()
         assert gas == result['gas']
+        with pytest.raises(ValueError, match='not supported'):
+            await device.set_gas('methylacetylene-propadiene propane')
 
 
 @pytest.mark.parametrize('gas', [('Air', 0), ('H2', 6)])
@@ -64,6 +66,28 @@ async def test_set_standard_gas_number(gas):
         await device.set_gas(gas[1])
         result = await device.get()
         assert gas[0] == result['gas']
+
+
+@pytest.mark.skip
+async def test_create_gas_mix():
+    """Confirm creating custom gas mixes works."""
+    pass
+
+
+async def test_tare_pressure():
+    """Confirm taring the absolute pressure works."""
+    async with FlowController(ADDRESS) as device:
+        await device.tare_pressure()
+        result = await device.get()
+        assert result['pressure'] == 0.0
+
+
+async def test_tare_flow():
+    """Confirm taring the flow works."""
+    async with FlowController(ADDRESS) as device:
+        await device.tare_volumetric()
+        result = await device.get()
+        assert result['volumetric_flow'] == 0.0
 
 
 async def test_get_firmware():
