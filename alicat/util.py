@@ -163,7 +163,7 @@ class SerialClient(Client):
             bytesize = serial.EIGHTBITS,
             stopbits = serial.STOPBITS_ONE,
             parity = serial.PARITY_NONE,
-            timeout = self.timeout
+            timeout = self.timeout,
         )
         self.open = True
 

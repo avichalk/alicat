@@ -304,7 +304,7 @@ class FlowMeter:
 
 CONTROL_POINTS = {
     'mass flow': 37, 'vol flow': 36,
-    'abs pressure': 34, 'gauge pressure': 38, 'diff pressure': 39
+    'abs pressure': 34, 'gauge pressure': 38, 'diff pressure': 39,
 }  # fixme: add remaining control points
 MaxRampTimeUnit = Literal['ms', 's', 'm', 'h', 'd']
 MAX_RAMP_TIME_UNITS: dict[MaxRampTimeUnit, int] = {
@@ -312,7 +312,7 @@ MAX_RAMP_TIME_UNITS: dict[MaxRampTimeUnit, int] = {
     's': 4,
     'm': 5,
     'h': 6,
-    'd': 7
+    'd': 7,
 }
 
 class FlowController(FlowMeter):
