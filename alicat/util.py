@@ -55,7 +55,7 @@ class Client(ABC):
                 try:
                     response = await self._handle_communication(command)
                     return response
-                except asyncio.exceptions.IncompleteReadError:
+                except asyncio.IncompleteReadError:
                     logger.error('IncompleteReadError.  Are there multiple connections?')
                     return None
             else:
