@@ -109,7 +109,7 @@ class FlowMeter:
         self._test_controller_open()
         return await self.hw.write_and_read(command)
 
-    async def get(self) -> dict:
+    async def get(self) -> dict[str, Any]:
         """Get the current state of the flow controller.
 
         From the Alicat mass flow controller documentation, this data is:
@@ -184,7 +184,7 @@ class FlowMeter:
         if gas_number != reg46_gasbit:
             raise OSError("Cannot set gas.")
 
-    async def create_mix(self, mix_no: int, name: str, gases: dict) -> None:
+    async def create_mix(self, mix_no: int, name: str, gases: dict[str, float]) -> None:
         """Create a gas mix.
 
         Gas mixes are made using COMPOSER software.
@@ -356,7 +356,7 @@ class FlowController(FlowMeter):
         self._test_controller_open()
         return await self.hw.write_and_read(command)
 
-    async def get(self) -> dict:
+    async def get(self) -> dict[str, Any]:
         """Get the current state of the flow controller.
 
         From the Alicat mass flow controller documentation, this data is:
@@ -458,7 +458,7 @@ class FlowController(FlowMeter):
         command = f'{self.unit}$$C'
         await self._write_and_read(command)
 
-    async def get_pid(self) -> dict:
+    async def get_pid(self) -> dict[str, Any]:
         """Read the current PID values on the controller.
 
         Values include the loop type, P value, D value, and I value.

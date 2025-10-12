@@ -25,7 +25,7 @@ class Client(RealClient):
         self._next_reply = ''
 
         self.open = True
-        self.control_point: str = choice(list(CONTROL_POINTS))  # type:ignore[assignment]
+        self.control_point: str = choice(list(CONTROL_POINTS))
         self.state: dict[str, str | float] = {
             'setpoint': 10,
             'gas': 'N2',
