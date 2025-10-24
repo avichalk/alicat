@@ -8,13 +8,13 @@ Serial driver and command line tool for
   <img src="https://www.alicat.com/wp-content/uploads/2024/12/basis-bc-series-controller-prod-900px.webp" height="400" />
 </p>
 
-*If you are using standard Alicat devices, go to [this repository](https://github.com/numat/alicat)* 
+*If you are using standard Alicat devices, go to [this repository](https://github.com/alexrudd2/alicat)* 
 
 Installation
 ============
 
 ```
-git clone https://github.com/avichalk/alicat/tree/basis-support
+git clone https://github.com/avichalk/alicat/tree/basis
 ```
 
 NOTE: The downloaded repository will have to be added to $PATH on your system to be properly imported. Otherwise, your script should be placed in the repository's parent folder.  
