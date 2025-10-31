@@ -5,7 +5,7 @@ Copyright (C) 2023 NuMat Technologies
 """
 from typing import Any
 
-from alicat.driver import basis  # noqa
+from alicat.basis import FlowController, FlowMeter   # noqa
 
 
 def command_line(args: Any = None) -> None:
