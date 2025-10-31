@@ -14,7 +14,7 @@ Installation
 ============
 
 ```
-git clone https://github.com/avichalk/alicat/tree/basis
+pip install git+https://github.com/avichalk/alicat.git@basis
 ```
 
 NOTE: The downloaded repository will have to be added to $PATH on your system to be properly imported. Otherwise, your script should be placed in the repository's parent folder.  
