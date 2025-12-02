@@ -154,7 +154,7 @@ class FlowMeter:
             del self.keys[-1]  # gas
             del self.keys[2]  # volumetric flow
         return {k: (float(v) if _is_float(v) else v)
-                for k, v in zip(self.keys, values)}
+                for k, v in zip(self.keys, values, strict=True)}
     async def set_gas(self, gas: str | int) -> None:
         """Set the gas type.
 
@@ -483,7 +483,7 @@ class FlowController(FlowMeter):
             pid_values.append(value_spl[3])
 
         return {k: (v if k == self.pid_keys[-1] else str(v))
-                for k, v in zip(self.pid_keys, pid_values)}
+                for k, v in zip(self.pid_keys, pid_values, strict=True)}
 
     async def set_pid(self, p: int | None=None,
                             i: int | None=None,
