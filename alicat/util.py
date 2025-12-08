@@ -113,7 +113,7 @@ class TcpClient(Client):
         except ValueError as e:
             raise ValueError('address must be hostname:port') from e
 
-    async def __aenter__(self) -> Client:
+    async def __aenter__(self) -> TcpClient:
         """Provide async entrance to context manager.
 
         Contrasting synchronous access, this will connect on initialization.
