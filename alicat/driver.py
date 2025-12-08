@@ -54,7 +54,7 @@ class FlowMeter:
         self.open = True
         self.firmware: str | None = None
 
-    async def __aenter__(self, *args: Any) -> FlowMeter:
+    async def __aenter__(self) -> FlowMeter:
         """Provide async enter to context manager."""
         return self
 
@@ -336,12 +336,12 @@ class FlowController(FlowMeter):
             unit: The Alicat-specified unit ID, A-Z. Default 'A'.
         """
         FlowMeter.__init__(self, address, unit, **kwargs)
-        self.control_point = None
+        self.control_point: str | None = None
         async def _init_control_point() -> None:
             self.control_point = await self._get_control_point()
         self._init_task = asyncio.create_task(_init_control_point())
 
-    async def __aenter__(self, *args: Any) -> FlowController:
+    async def __aenter__(self) -> FlowController:
         """Provide async enter to context manager."""
         return self
 
