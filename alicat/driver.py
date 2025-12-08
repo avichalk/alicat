@@ -218,8 +218,7 @@ class FlowMeter:
             name,
             str(mix_no),
             ' '.join(gas_list),
-])
-
+        ])
         line = await self._write_and_read(command)
 
         # If a gas mix is not successfully created, ? is returned.
@@ -230,7 +229,6 @@ class FlowMeter:
         """Delete a gas mix."""
         command = f'{self.unit}GD{mix_no}'
         line = await self._write_and_read(command)
-
         if line == '?':
             raise OSError("Unable to delete mix.")
 
@@ -253,7 +251,6 @@ class FlowMeter:
         """Tare the pressure."""
         command = f'{self.unit}$$PC'
         line = await self._write_and_read(command)
-
         if line == '?':
             raise OSError("Unable to tare pressure.")
 
@@ -261,7 +258,6 @@ class FlowMeter:
         """Tare volumetric flow."""
         command = f'{self.unit}$$V'
         line = await self._write_and_read(command)
-
         if line == '?':
             raise OSError("Unable to tare flow.")
 
@@ -411,7 +407,6 @@ class FlowController(FlowMeter):
         """
         command = f'{self.unit}$$TB {batch}'
         line = await self._write_and_read(command)
-
         if line == '?':
             raise OSError("Unable to read totalizer batch volume.")
         values = line.split(" ")  # type: ignore[union-attr]
@@ -439,7 +434,6 @@ class FlowController(FlowMeter):
 
         command = f'{self.unit}$$TB {batch} {batch_volume} {units_no}'
         line = await self._write_and_read(command)
-
         if line == '?':
             raise OSError("Unable to set totalizer batch volume. Check if volume is out of range for device.")
 
