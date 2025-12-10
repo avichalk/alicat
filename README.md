@@ -1,4 +1,4 @@
-alicat
+ALICAT
 ======
 
 TCP/Serial driver and command line tool for
@@ -25,30 +25,25 @@ Installation
 ============
 
 ```
-pip install alicat
+pip install git+https://github.com/avichalk/alicat.git@basis
 ```
 
 Usage
 =====
 
-## Command Line
+To communicate with a BASIS device, please use the following syntax.
 
-For basic tasks, this driver includes a command-line interface. Read the help
-for more.
-
-```
-alicat --help
-```
-
-## Python
-This uses Python ≥3.5's async/await syntax to asynchronously communicate with an Alicat. For example:
 
 ```python
 import asyncio
-from alicat import FlowController
+from alicat import basis
 
 async def get():
+<<<<<<< HEAD
     async with FlowController(address = "COM{port}", unit = "{unit_ID}") as flow_controller:
+=======
+    async with basis.FlowController(address = "com_port", unit = "unit_id") as flow_controller:
+>>>>>>> basis
         print(await flow_controller.get())
 
 asyncio.run(get())
@@ -62,21 +57,17 @@ return a dictionary of the form:
 ```python
 {
   'setpoint': 0.0,         # Setpoint, either mass flow rate or pressure
-  'control_point': 'flow', # Either 'flow' or 'pressure'
   'gas': 'Air',            # Can be any option in `flow_controller.gases`
   'mass_flow': 0.0,        # Mass flow (in units specified at time of purchase)
-  'pressure': 25.46,       # Pressure (normally in psia)
   'temperature': 23.62,    # Temperature (normally in C)
-  'total_flow': 0.0,       # Optional. If totalizer function purchased, will be included
   'volumetric_flow': 0.0   # Volumetric flow (in units specified at time of purchase)
 }
 ```
 
-On flow controllers, you can set the flow or pressure setpoints.
+On flow controllers, you can set the flow setpoint.
 
 ```python
 await flow_controller.set_flow_rate(1.0)
-await flow_controller.set_pressure(20)
 ```
 
 ### Gas Type
@@ -86,14 +77,6 @@ You can set the gas type by name or by index. For more on setting by index, see 
 ```python
 await flow_controller.set_gas('N2')
 await flow_controller.set_gas(8)
-```
-
-For firmware 5v and greater, you can create and set gas mixes. Mixes can contain up to five gases and are stored in gas indices 236-255.
-
-```python
-await flow_controller.create_mix(mix_no=236, name="Mix1", gases={'N2': 50, 'O2': 30, 'CO2': 20})
-await flow_controller.set_gas(236)
-await flow_controller.delete_mix(236)
 ```
 
 ### PID Parameters
@@ -116,12 +99,8 @@ print(await flow_controller.get_pid())
 Additional features include override commands to increase device functionality.
 
 ```python
-await flow_controller.lock()            # Lock the front display.
-await flow_controller.unlock()          # Unlock the front display.
 await flow_controller.hold()            # Hold the valve in its current position.
 await flow_controller.cancel_hold()     # Cancel the valve hold.
-await flow_controller.tare_volumetric() # Tare volumetric flow.
-await flow_controller.tare_pressure()   # Tare pressure.
 await flow_controller.reset_totalizer() # Reset totalizer, if totalizer functionality included.
 ```
 
@@ -140,13 +119,3 @@ await flow_controller_2.set_flow_rate(0.5)
 await flow_controller_1.close() # /dev/ttyUSB0 is still open!
 await flow_controller_2.close()
 ```
-
-### Breaking changes
-
-`0.5.0`
-- Support only `asyncio`.  The last version with synchronous code was `0.4.1`.
-- Rename `address`/`-a` to `unit`/`-u` to match Alicat's documentation
-- Rename `-u` to `-ul` (for `--unlock`)
-
-`0.4.1`
-Remove TCP support.  Use `pip install alicat==0.3.1` if needed
