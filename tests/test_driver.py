@@ -9,6 +9,7 @@ from alicat.driver import FlowController
 from alicat.mock import Client
 
 ADDRESS = '/dev/ttyUSB0'
+# ADDRESS = 'COM12'
 
 @mock.patch('alicat.driver.SerialClient', Client)
 @mock.patch('alicat.driver.TcpClient', Client)
