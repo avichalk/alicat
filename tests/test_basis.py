@@ -1,8 +1,11 @@
 """Test the BASIS devices/driver respond with correct data."""
+from random import uniform
+
 import pytest
 
-from alicat.basis import BASISMeter  #, BASISController
+from alicat.basis import BASISController, BASISMeter
 
+ADDRESS = '/dev/ttyUSB0'
 ADDRESS = "COM16" # tests requite unit: A, baud: 38400
 
 @pytest.fixture(scope='session', autouse=True)
@@ -21,6 +24,22 @@ async def test_is_connected(cls):
         assert await device.is_connected(ADDRESS)
         assert not await device.is_connected('bad_address')
 
+@pytest.mark.skip ## skip for controllers
+async def test_tare_flow():
+    """Confirm taring the flow works."""
+    async with BASISMeter(ADDRESS) as device:
+        await device.tare()
+        result = await device.get()
+        assert result['mass_flow'] == 0.0
+
+@pytest.mark.skip
+async def test_reset_totalizer():
+    """Confirm resetting the totalizer works."""
+    async with BASISMeter(ADDRESS) as device:
+        await device.reset_totalizer()
+        result = await device.get()
+        assert result['total_flow'] == 0.0
+
 @pytest.mark.parametrize('gas', ['Air', 'H2'])
 async def test_set_standard_gas_name(gas):
     """Confirm that setting standard gases by name works."""
@@ -31,6 +50,11 @@ async def test_set_standard_gas_name(gas):
         with pytest.raises(ValueError, match='not supported'):
             await device.set_gas('methylacetylene-propadiene propane')
 
+## remaining tests:
+## totalizer_batch
+## hold
+## pid
+
 @pytest.mark.parametrize('gas', [('Air', 0), ('Ar', 1)])
 async def test_set_standard_gas_number(gas):
     """Confirm that setting standard gases by number works."""
@@ -39,3 +63,11 @@ async def test_set_standard_gas_number(gas):
         result = await device.get()
         assert gas[0] == result['gas']
 
+async def test_flow_setpoint_roundtrip():
+    """Confirm that setting/getting flowrates works."""
+    async with BASISController(ADDRESS) as device:
+        flow_sp = round(uniform(1, 100), 2)
+        await device.set_flow_rate(flowrate=flow_sp)
+        # assert flow_sp == await device.get_flow_rate()
+        result = await device.get()
+        assert flow_sp == pytest.approx(result['setpoint'], 0.1)
