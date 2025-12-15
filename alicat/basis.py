@@ -180,8 +180,29 @@ class BASISController(BASISMeter):
         Returns:
             The state of the flow controller, as a dictionary.
         """
-        state = await super().get()
-        state['control_point'] = "mass flow"
+        cp = "mass flow"
+
+        command = f'{self.unit}'
+        line = await self._write_and_read(command)
+        if not line:
+            raise OSError("Could not read values")
+        spl = line.split()
+        unit, values = spl[0], spl[1:]
+
+        # Over range errors for mass, volume, pressure, and temperature
+        # Explicitly silenced because I find it redundant.
+        while values[-1].upper() in ['MOV', 'VOV', 'POV', 'TOV']:
+            del values[-1]
+        if unit != self.unit:
+            raise ValueError("Flow controller unit ID mismatch.")
+        if len(values) == 5 and len(self.keys) == 6:
+            del self.keys[-3]
+        if values[-1] == "HLD":
+            cp = "HLD"
+            del values[-1]
+        state = {k: (float(v) if _is_float(v) else v)
+                for k, v in zip(self.keys, values, strict=True)}
+        state['control_point'] = cp
         return state
 
     async def get_totalizer_batch(self) -> list[float]:

@@ -51,7 +51,6 @@ async def test_set_standard_gas_name(gas):
             await device.set_gas('methylacetylene-propadiene propane')
 
 ## remaining tests:
-## hold
 ## pid
 
 async def test_totalizer_batch_volume():
@@ -61,6 +60,18 @@ async def test_totalizer_batch_volume():
         await device.set_totalizer_batch(batch_vol)
         result = await device.get_totalizer_batch()
         assert batch_vol == pytest.approx(float(result[0]))
+
+async def test_valve_hold():
+    """Confirm holding at a given valve drive percentage works."""
+    async with BASISController(ADDRESS) as device:
+        valve_drive = round(uniform(1, 100))
+        await device.hold(valve_drive)
+        result = await device.get()
+        assert "HLD" in result['control_point']
+
+        await device.cancel_hold()
+        result = await device.get()
+        assert "HLD" not in result['control_point']
 
 @pytest.mark.parametrize('gas', [('Air', 0), ('Ar', 1)])
 async def test_set_standard_gas_number(gas):
