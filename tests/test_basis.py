@@ -50,8 +50,16 @@ async def test_set_standard_gas_name(gas):
         with pytest.raises(ValueError, match='not supported'):
             await device.set_gas('methylacetylene-propadiene propane')
 
-## remaining tests:
-## pid
+## todo: some tests are only run for controllers
+
+async def test_get_set_pid_terms():
+    """Confirm PID terms are updated properly."""
+    async with BASISController(ADDRESS) as device:
+        p = round(uniform(100, 500))
+        i = round(uniform(1000, 5000))
+        await device.set_pid_terms(p, i)
+        result = await device.get_pid_terms()
+        assert {"P": f'{p}', "I": f'{i}'} == result
 
 async def test_totalizer_batch_volume():
     """Confirm setting the totalizer batch volume works."""

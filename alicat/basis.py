@@ -245,7 +245,7 @@ class BASISController(BASISMeter):
         command = f'{self.unit}C'
         await self._write_and_read(command)
 
-    async def get_pid(self) -> dict[str, str]:
+    async def get_pid_terms(self) -> dict[str, str]:
         """Read the current PID values on the controller.
 
         Values include the P value and I value.
@@ -260,7 +260,7 @@ class BASISController(BASISMeter):
         spl = line.split()
         return dict(zip(self.pid_keys, spl[1:], strict=False))
 
-    async def set_pid(self, p: int, i: int) -> None:
+    async def set_pid_terms(self, p: int, i: int) -> None:
         """Set specified PID parameters.
 
         Args:
