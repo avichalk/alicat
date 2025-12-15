@@ -11,7 +11,7 @@ ADDRESS = "COM16" # tests requite unit: A, baud: 38400
 @pytest.fixture(scope='session', autouse=True)
 async def precondition():
     """Exit if com port inaccessible or device not found."""
-    async with BASISMeter(ADDRESS) as device:
+    async with BASISController(ADDRESS) as device:
         res = await device._write_and_read('A')
         if not res:
             pytest.exit("Ensure device is connected on correct port.")
@@ -32,25 +32,22 @@ async def test_tare_flow():
         result = await device.get()
         assert result['mass_flow'] == 0.0
 
-@pytest.mark.skip
 async def test_reset_totalizer():
     """Confirm resetting the totalizer works."""
-    async with BASISMeter(ADDRESS) as device:
+    async with BASISController(ADDRESS) as device:
         await device.reset_totalizer()
         result = await device.get()
-        assert result['total_flow'] == 0.0
+        assert result['totalizer'] == 0.0
 
 @pytest.mark.parametrize('gas', ['Air', 'H2'])
 async def test_set_standard_gas_name(gas):
     """Confirm that setting standard gases by name works."""
-    async with BASISMeter(ADDRESS) as device:
+    async with BASISController(ADDRESS) as device:
         await device.set_gas(gas)
         result = await device.get()
         assert gas == result['gas']
         with pytest.raises(ValueError, match='not supported'):
             await device.set_gas('methylacetylene-propadiene propane')
-
-## todo: some tests are only run for controllers
 
 async def test_get_set_pid_terms():
     """Confirm PID terms are updated properly."""
@@ -84,7 +81,7 @@ async def test_valve_hold():
 @pytest.mark.parametrize('gas', [('Air', 0), ('Ar', 1)])
 async def test_set_standard_gas_number(gas):
     """Confirm that setting standard gases by number works."""
-    async with BASISMeter(ADDRESS) as device:
+    async with BASISController(ADDRESS) as device:
         await device.set_gas(gas[1])
         result = await device.get()
         assert gas[0] == result['gas']

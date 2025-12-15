@@ -201,7 +201,7 @@ class BASISController(BASISMeter):
             cp = "HLD"
             del values[-1]
         state = {k: (float(v) if _is_float(v) else v)
-                for k, v in zip(self.keys, values, strict=True)}
+                for k, v in zip(self.keys, values, strict=False)}
         state['control_point'] = cp
         return state
 
