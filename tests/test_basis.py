@@ -5,7 +5,7 @@ import pytest
 
 from alicat.basis import BASISController, BASISMeter
 
-ADDRESS = '/dev/ttyUSB0'
+# ADDRESS = '/dev/ttyUSB0'
 ADDRESS = "COM16" # tests requite unit: A, baud: 38400
 
 @pytest.fixture(scope='session', autouse=True)
@@ -51,9 +51,16 @@ async def test_set_standard_gas_name(gas):
             await device.set_gas('methylacetylene-propadiene propane')
 
 ## remaining tests:
-## totalizer_batch
 ## hold
 ## pid
+
+async def test_totalizer_batch_volume():
+    """Confirm setting the totalizer batch volume works."""
+    async with BASISController(ADDRESS) as device:
+        batch_vol = round(uniform(1, 100))
+        await device.set_totalizer_batch(batch_vol)
+        result = await device.get_totalizer_batch()
+        assert batch_vol == pytest.approx(float(result[0]))
 
 @pytest.mark.parametrize('gas', [('Air', 0), ('Ar', 1)])
 async def test_set_standard_gas_number(gas):

@@ -184,17 +184,18 @@ class BASISController(BASISMeter):
         state['control_point'] = "mass flow"
         return state
 
-    async def get_totalizer_batch(self) -> str:
+    async def get_totalizer_batch(self) -> list[float]:
         """Get the totalizer batch volume.
 
         Returns:
-            line: Remaining batch volume
+            volume: Batch volume
+            remaining: Remaining batch volume
         """
         remaining = await self._write_and_read(f'{self.unit}DV 64')
         current = await self._write_and_read(f'{self.unit}TB')
         if current == '?' or remaining == '?':
             raise OSError("Unable to read totalizer batch volume.")
-        return f'Totalizer currently set to {current}. Remaining volume {remaining.split(" ")[-1]}' # type: ignore
+        return [current, remaining.split(" ")[-1]] # type: ignore
 
     async def set_totalizer_batch(self, batch_volume: float, batch: int = 1, units: str = 'default') -> None:
         """Set the totalizer batch volume.
