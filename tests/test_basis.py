@@ -1,12 +1,17 @@
 """Test the BASIS devices/driver respond with correct data."""
 from random import uniform
+from unittest import mock
 
 import pytest
 
 from alicat.basis import BASISController, BASISMeter
+from alicat.mock import BASISClient
 
 # ADDRESS = '/dev/ttyUSB0'
 ADDRESS = "COM16" # tests requite unit: A, baud: 38400
+
+## todo : mock method not working.
+@mock.patch('alicat.basis.SerialClient', BASISClient)
 
 @pytest.fixture(scope='session', autouse=True)
 async def precondition():
@@ -30,7 +35,7 @@ async def test_tare_flow():
     async with BASISMeter(ADDRESS) as device:
         await device.tare()
         result = await device.get()
-        assert result['mass_flow'] == 0.0
+        assert result['flow'] == 0.0
 
 async def test_reset_totalizer():
     """Confirm resetting the totalizer works."""

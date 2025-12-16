@@ -6,11 +6,12 @@ Copyright (C) 2023 NuMat Technologies
 """
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import Any
 
 from .driver import FlowMeter
 from .util import Client, SerialClient, _is_float
 
+GASES = ['Air', 'Ar', 'CO2', 'N2', 'O2', 'N2O', 'H2', 'He', 'CH4']
 
 class BASISMeter(FlowMeter):
     """Python driver for BASIS Flow Meters.
@@ -20,10 +21,6 @@ class BASISMeter(FlowMeter):
     This communicates with the flow meter over a USB or RS-232/RS-485
     connection using pyserial.
     """
-
-    # A dictionary that maps port names to a tuple of connection
-    # objects and the refcounts
-    gases: ClassVar[list[str]] = ['Air', 'Ar', 'CO2', 'N2', 'O2', 'N2O', 'H2', 'He', 'CH4']
 
     def __init__(self, address: str = '/dev/ttyUSB0', unit: str = 'A', baudrate: int = 38400, **kwargs: Any) -> None:
         """Connect this driver with the appropriate USB / serial port.
@@ -37,7 +34,7 @@ class BASISMeter(FlowMeter):
 
         self.unit = unit
         self.keys = ['temperature', 'flow', 'totalizer', 'setpoint',
-                     'valve drive', 'gas']
+                     'valve_drive', 'gas']
         self.open = True
         self.firmware: str | None = None
 
@@ -87,9 +84,9 @@ class BASISMeter(FlowMeter):
                 'Air', 'Ar', 'CO2', 'N2', 'O2', 'N2O', 'H2', 'He', 'CH4'
         """
         if isinstance(gas, str):
-            if gas not in self.gases:
+            if gas not in GASES:
                 raise ValueError(f"{gas} not supported!")
-            gas_number = self.gases.index(gas)
+            gas_number = GASES.index(gas)
         else:
             gas_number = gas
         command = f'{self.unit}GS {gas_number}'
@@ -168,13 +165,11 @@ class BASISController(BASISMeter):
         """Get the current state of the flow controller.
 
         From the Alicat mass flow controller documentation, this data is:
-         * Pressure (normally in psia)
          * Temperature (normally in C)
-         * Volumetric flow (in units specified at time of order)
          * Mass flow (in units specified at time of order)
          * Flow setpoint (in units of control point)
-         * Flow control point (either 'flow' or 'pressure')
-         * Total flow (only on models with the optional totalizer function)
+         * Flow control point (either 'mass_flow' or 'HLD')
+         * Total flow
          * Currently selected gas
 
         Returns:
