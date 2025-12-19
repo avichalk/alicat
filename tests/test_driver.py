@@ -10,8 +10,11 @@ from alicat.mock import Client
 
 ADDRESS = '/dev/ttyUSB0'
 
-@mock.patch('alicat.driver.SerialClient', Client)
-@mock.patch('alicat.driver.TcpClient', Client)
+@pytest.fixture(autouse=True)
+def patch_serial_client():
+    """Replace the serial client with our mock."""
+    with mock.patch('alicat.driver.SerialClient', Client):
+        yield
 
 @pytest.mark.parametrize('unit', ['A', 'B'])
 def test_driver_cli(capsys, unit):
