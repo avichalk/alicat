@@ -187,6 +187,7 @@ class BASISClient(RealClient):
             f"{self.state['setpoint']:07.2f} "
             f"{self.state['valve_drive']:07.2f} "
             f"{self.state['gas']:<7} "
+            f"{'HLD' if self.state['control_point'] == 'HLD' else ''}"
         )
 
     def _handle_write(self, data: bytes) -> None:
@@ -203,7 +204,7 @@ class BASISClient(RealClient):
             self.state['setpoint'] = float(msg[1:])
             self._next_reply = self._create_dataframe()
         elif "GS" in msg:  # set gas via reg46
-            gas = msg[6:]
+            gas = msg[3:]
             self._next_reply = f"{self.unit} {gas}"
             with contextlib.suppress(ValueError):
                 gas = BASISGases[int(gas)]
@@ -214,8 +215,10 @@ class BASISClient(RealClient):
         elif msg == 'T': # reset totalizer
             self.state['totalizer'] = 0
             self._next_reply = self._create_dataframe()
-        elif msg == 'HPUR': # valve hold
+        elif 'HPUR' in msg: # valve hold
             self.state['control_point'] = 'HLD'
+            valve_drive = float(msg[5:])
+            self.state['valve_drive'] = valve_drive
             self._next_reply = self._create_dataframe()
         elif msg == 'C': # cancel hold
             self.state['control_point'] = 'mass_flow'
