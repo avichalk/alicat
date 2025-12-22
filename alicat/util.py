@@ -51,14 +51,13 @@ class Client(ABC):
         """
         await self._handle_connection()
         async with self.lock:
-            if self.open:
-                try:
-                    response = await self._handle_communication(command)
-                    return response
-                except asyncio.IncompleteReadError:
-                    logger.error('IncompleteReadError.  Are there multiple connections?')
-                    return None
-            else:
+            if not self.open:
+                return None
+            try:
+                response = await self._handle_communication(command)
+                return response
+            except asyncio.IncompleteReadError:
+                logger.error('IncompleteReadError.  Are there multiple connections?')
                 return None
 
     async def clear(self) -> None:
@@ -67,7 +66,7 @@ class Client(ABC):
         try:
             junk = await asyncio.wait_for(self.reader.read(100), timeout=self.timeout)
             logger.warning(junk)
-        except TimeoutError:
+        except asyncio.TimeoutError:
             pass
 
     async def _handle_communication(self, command: str) -> str | None:
@@ -113,7 +112,7 @@ class TcpClient(Client):
         except ValueError as e:
             raise ValueError('address must be hostname:port') from e
 
-    async def __aenter__(self) -> Client:
+    async def __aenter__(self) -> TcpClient:
         """Provide async entrance to context manager.
 
         Contrasting synchronous access, this will connect on initialization.
