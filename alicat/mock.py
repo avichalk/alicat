@@ -163,13 +163,13 @@ class BASISClient(RealClient):
         self.state: dict[str, str | float] = {
             'setpoint': 10,
             'gas': 'N2',
-            'flow': 10 * (0.95 + 0.1 * random()),
+            'mass_flow': 10 * (0.95 + 0.1 * random()),
             'temperature': random() * 50.0,
             'valve_drive': 0.0,
             'control_point': 'mass_flow',
             'totalizer': 0.0,
         }
-        self.keys = ['temperature', 'flow', 'totalizer'
+        self.keys = ['temperature', 'mass_flow', 'totalizer',
                      'valve_drive', 'gas', 'setpoint', 'control_point']
         self.pid = {'P': '500', 'I': '5000'}
         self.firmware = "V 3.1.0"
@@ -209,7 +209,7 @@ class BASISClient(RealClient):
                 gas = BASISGases[int(gas)]
             self.state['gas'] = gas
         elif msg == 'V': ## tare flow
-            self.state['flow'] = 0
+            self.state['mass_flow'] = 0
             self._next_reply = self._create_dataframe()
         elif msg == 'T': # reset totalizer
             self.state['totalizer'] = 0

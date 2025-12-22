@@ -33,7 +33,7 @@ class BASISMeter(FlowMeter):
         self.hw: Client = SerialClient(address=address, baudrate=baudrate, **kwargs)
 
         self.unit = unit
-        self.keys = ['temperature', 'flow', 'totalizer', 'setpoint',
+        self.keys = ['temperature', 'mass_flow', 'totalizer', 'setpoint',
                      'valve_drive', 'gas']
         self.open = True
         self.firmware: str | None = None
