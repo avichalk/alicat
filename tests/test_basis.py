@@ -21,7 +21,6 @@ async def precondition():
         if not res:
             pytest.exit("Ensure device is connected on correct port.")
 
-@pytest.mark.skip # broken on 3.9
 @pytest.mark.parametrize('cls', [BASISMeter])  # Fixme: fix FlowMeter
 async def test_is_connected(cls):
     """Confirm that connection status works."""
