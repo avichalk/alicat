@@ -1,28 +1,11 @@
 """Test the BASIS devices/driver respond with correct data."""
 from random import uniform
-from unittest import mock
 
 import pytest
 
 from alicat.basis import BASISController, BASISMeter
-from alicat.mock import BASISClient
 
-# ADDRESS = '/dev/ttyUSB0'
 ADDRESS = "COM16" # tests requite unit: A, baud: 38400
-
-@pytest.fixture(autouse=True)
-def patch_serial_client():
-    """Replace the serial client with our mock."""
-    with mock.patch('alicat.basis.SerialClient', BASISClient):
-        yield
-
-# @pytest.fixture(scope='session', autouse=True)
-# async def precondition():
-#     """Exit if com port inaccessible or device not found."""
-#     async with BASISController(ADDRESS) as device:
-#         res = await device._write_and_read('A')
-#         if not res:
-#             pytest.exit("Ensure device is connected on correct port.")
 
 @pytest.mark.parametrize('cls', [BASISMeter])  # Fixme: fix FlowMeter
 async def test_is_connected(cls):
