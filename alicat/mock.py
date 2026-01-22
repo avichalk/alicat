@@ -172,6 +172,7 @@ class BASISClient(RealClient):
         self.keys = ['temperature', 'mass_flow', 'totalizer',
                      'valve_drive', 'gas', 'setpoint', 'control_point']
         self.pid = {'P': '500', 'I': '5000'}
+        self.batchvol = '0'
         self.firmware = "V 3.1.0"
 
     async def _handle_connection(self) -> None:
@@ -230,7 +231,14 @@ class BASISClient(RealClient):
                 terms = msg[3:].strip().split(' ')
                 self.pid = {'P': terms[0], 'I': terms[1]}
                 self._next_reply = f"{self.unit} {msg[3:]}"
-        ## todo: batch volume
+        elif 'TB' in msg: ## batch volume
+            if len(msg.strip().split(' ')) == 1: # get batch vol
+                self._next_reply = f"{self.batchvol}"
+            else:
+                self.batchvol = msg[2:]
+                self._next_reply = f"{self.unit} {self.batchvol}"
+        elif 'DV 64' in msg: ## remaining volume
+            self._next_reply = f"{self.unit} {msg[3:]}"
         else:
             raise NotImplementedError(msg)
 

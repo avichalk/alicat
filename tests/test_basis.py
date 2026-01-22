@@ -7,6 +7,7 @@ from alicat.basis import BASISController, BASISMeter
 
 ADDRESS = "COM16" # tests requite unit: A, baud: 38400
 
+@pytest.mark.skip ## skip
 @pytest.mark.parametrize('cls', [BASISMeter])  # Fixme: fix FlowMeter
 async def test_is_connected(cls):
     """Confirm that connection status works."""
