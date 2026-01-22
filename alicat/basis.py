@@ -40,6 +40,27 @@ class BASISMeter(FlowMeter):
         """Provide async enter to context manager."""
         return self
 
+    @classmethod
+    async def is_connected(cls, port: str, unit: str = 'A') -> bool:
+        """Return True if the specified port is connected to this device.
+
+        This class can be used to automatically identify ports with connected
+        Alicats. Iterate through all connected interfaces, and use this to
+        test. Ports that come back True should be valid addresses.
+        """
+        is_device = False
+        try:
+            device = cls(port, unit)
+            try:
+                c = await device.get()
+                assert c
+                is_device = True
+            finally:
+                await device.close()
+        except Exception:
+            pass
+        return is_device
+
     async def get(self) -> dict[str, Any]:
         """Get the current state of the flow controller.
 
@@ -70,7 +91,7 @@ class BASISMeter(FlowMeter):
         if unit != self.unit:
             raise ValueError("Flow controller unit ID mismatch.")
         if len(values) == 5 and len(self.keys) == 6:
-            del self.keys[-3]
+            self.keys.remove('setpoint')
         return {k: (float(v) if _is_float(v) else v)
                 for k, v in zip(self.keys, values, strict=True)}
 

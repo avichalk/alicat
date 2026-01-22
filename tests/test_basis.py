@@ -25,8 +25,8 @@ async def patch_serial_client(request):
         with mock.patch('alicat.basis.SerialClient', BASISClient):
             yield
 
-@pytest.mark.skip ## skip
-@pytest.mark.parametrize('cls', [BASISMeter])  # Fixme: fix FlowMeter
+@pytest.mark.skip
+@pytest.mark.parametrize('cls', [BASISMeter, BASISController])  # Fixme
 async def test_is_connected(cls):
     """Confirm that connection status works."""
     async with cls(ADDRESS) as device:
