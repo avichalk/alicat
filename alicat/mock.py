@@ -224,12 +224,12 @@ class BASISClient(RealClient):
             self.state['control_point'] = 'mass_flow'
             self._next_reply = self._create_dataframe()
         elif 'LCG' in msg: # pid terms
-            if len(msg.strip().split(' ')) == 2: # get pid terms
-                self._next_reply = f"{self.pid}"
+            if len(msg.strip().split(' ')) == 1: # get pid terms
+                self._next_reply = f"{self.unit} {self.pid['P']} {self.pid['I']}"
             else:
-                terms = msg[7:].strip().split(' ')
+                terms = msg[3:].strip().split(' ')
                 self.pid = {'P': terms[0], 'I': terms[1]}
-                self._next_reply = f"{self.unit} {msg[7:]}"
+                self._next_reply = f"{self.unit} {msg[3:]}"
         ## todo: batch volume
         else:
             raise NotImplementedError(msg)
