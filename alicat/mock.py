@@ -148,7 +148,7 @@ class Client(RealClient):
 class BASISClient(RealClient):
     """Mock the BASIS communication client."""
 
-    def __init__(self, address: str) -> None:
+    def __init__(self, address: str, baudrate: int) -> None:
         super().__init__(timeout=0.01)
         self.writer = MagicMock(spec=asyncio.StreamWriter)
         self.writer.write.side_effect=self._handle_write
@@ -157,6 +157,7 @@ class BASISClient(RealClient):
         self.reader.readuntil.side_effect = self._handle_read
 
         self.port = address
+        self.baud = baudrate
         self.open = True
         self._next_reply = ''
 
