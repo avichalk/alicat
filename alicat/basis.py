@@ -232,7 +232,7 @@ class BASISController(BASISMeter):
             raise OSError("Unable to read totalizer batch volume.")
         return [current, remaining.split(" ")[-1]] # type: ignore
 
-    async def set_totalizer_batch(self, batch_volume: float, batch: int = 1, units: str = 'default') -> None:
+    async def set_totalizer_batch(self, batch_volume: float) -> None:
         """Set the totalizer batch volume.
 
         Args:

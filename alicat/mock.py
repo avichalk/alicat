@@ -4,7 +4,6 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from random import choice, random
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 from .basis import GASES as BASISGases
@@ -148,7 +147,7 @@ class Client(RealClient):
 class BASISClient(RealClient):
     """Mock the BASIS communication client."""
 
-    def __init__(self, address: str, **kwargs: Any) -> None:
+    def __init__(self, address: str) -> None:
         super().__init__(timeout=0.01)
         self.writer = MagicMock(spec=asyncio.StreamWriter)
         self.writer.write.side_effect=self._handle_write
