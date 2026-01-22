@@ -22,6 +22,7 @@ class Client(RealClient):
         self.reader.read.return_value = self.eol
         self.reader.readuntil.side_effect = self._handle_read
 
+        self.port = address
         self.open = True
         self._next_reply = ''
 
@@ -155,6 +156,7 @@ class BASISClient(RealClient):
         self.reader.read.return_value = self.eol
         self.reader.readuntil.side_effect = self._handle_read
 
+        self.port = address
         self.open = True
         self._next_reply = ''
 
