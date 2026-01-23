@@ -5,8 +5,8 @@ TCP/Serial driver and command line tool for
 [Alicat Laminar DP mass flow controllers](https://www.alicat.com/gas-products/laminar-dp-mass-flow-meters-and-controllers/).
 
 <p float="left">
-  <img src="https://www.alicat.com/wp-content/uploads/2024/05/M_MC_Pair.webp" width="100" />
-  <img src="https://www.alicat.com/wp-content/uploads/2024/11/BASIS-controller-prod-600px.webp" width="100" />
+  <img src="https://www.alicat.com/wp-content/uploads/2024/05/M_MC_Pair.webp" width="250" />
+  <img src="https://www.alicat.com/wp-content/uploads/2024/11/BASIS-controller-prod-600px.webp" width="250" />
 </p>
 
 *If you are using Analyt-MTC flow controllers, go to [this repository](https://github.com/schlenzmeister/AnalytMTC/wiki) for more info.*
