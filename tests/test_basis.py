@@ -63,8 +63,8 @@ async def test_get_set_pid_terms():
     async with BASISController(ADDRESS) as device:
         p = round(uniform(100, 500))
         i = round(uniform(1000, 5000))
-        await device.set_pid_terms(p, i)
-        result = await device.get_pid_terms()
+        await device.set_pid(p, i)
+        result = await device.get_pid()
         assert {"P": f'{p}', "I": f'{i}'} == result
 
 async def test_totalizer_batch_volume():
