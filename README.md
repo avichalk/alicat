@@ -88,11 +88,11 @@ return a dictionary of the form:
 
 ## BASIS Devices
 {
-  'setpoint': 0.0,         # Setpoint, either mass flow rate or pressure
+  'setpoint': 0.0,         # Mass Flow Setpoint
   'gas': 'Air',            # Can be Air, Ar, CO2, N2, O2, N2O, H2, He, CH4
-  'mass_flow': 0.0,        # Mass flow (in units specified at time of purchase)
+  'mass_flow': 0.0,        # Mass flow (in SCCM or SLPM)
   'temperature': 23.62,    # Temperature (normally in C)
-  'volumetric_flow': 0.0   # Volumetric flow (in units specified at time of purchase)
+  'volumetric_flow': 0.0   # Volumetric flow (in CCM or LPM)
 }
 ```
 
