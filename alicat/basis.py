@@ -116,7 +116,7 @@ class BASISMeter(FlowMeter):
 
     async def tare(self) -> None:
         """Tare flow."""
-        command = f'{self.unit} V'
+        command = f'{self.unit}V'
         line = await self._write_and_read(command)
 
         if line == '?':

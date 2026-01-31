@@ -33,13 +33,12 @@ async def test_is_connected(cls):
         assert await device.is_connected(ADDRESS)
         assert not await device.is_connected('bad_address')
 
-@pytest.mark.skip ## skip for controllers
 async def test_tare_flow():
     """Confirm taring the flow works."""
     async with BASISMeter(ADDRESS) as device:
         await device.tare()
         result = await device.get()
-        assert result['flow'] == 0.0
+        assert result['mass_flow'] == 0.0
 
 async def test_reset_totalizer():
     """Confirm resetting the totalizer works."""
@@ -100,6 +99,5 @@ async def test_flow_setpoint_roundtrip():
     async with BASISController(ADDRESS) as device:
         flow_sp = round(uniform(1, 100), 2)
         await device.set_flow_rate(flowrate=flow_sp)
-        # assert flow_sp == await device.get_flow_rate()
         result = await device.get()
         assert flow_sp == pytest.approx(result['setpoint'], 0.1)
