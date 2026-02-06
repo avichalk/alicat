@@ -114,9 +114,14 @@ class BASISMeter(FlowMeter):
         if not res:
             raise OSError("Cannot set gas.")
 
-    async def tare(self) -> None:
-        """Tare flow."""
-        command = f'{self.unit}V'
+    async def tare(self, duration: int = 10) -> None:
+        """Tare flow.
+
+        Args:
+            duration: The time in ms to collect values for calculating the tare
+            offset. The value is a positive integer from 1-32767.
+        """
+        command = f'{self.unit}V {duration}'
         line = await self._write_and_read(command)
 
         if line == '?':

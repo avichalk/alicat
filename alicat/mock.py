@@ -212,7 +212,7 @@ class BASISClient(RealClient):
             with contextlib.suppress(ValueError):
                 gas = BASISGases[int(gas)]
             self.state['gas'] = gas
-        elif msg == 'V': # tare flow
+        elif msg[0] == 'V': # tare flow
             self.state['mass_flow'] = 0
             self._next_reply = self._create_dataframe()
         elif msg == 'T': # reset totalizer
