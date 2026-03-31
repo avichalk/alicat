@@ -46,7 +46,7 @@ This uses Python ≥3.5's async/await syntax to asynchronously communicate with 
 
 ```python
 import asyncio
-from alicat import FlowController
+from alicat.driver import FlowController
 
 async def get():
     async with FlowController(address = "com_port", unit = "unit_id") as flow_controller:
